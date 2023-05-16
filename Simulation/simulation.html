@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko"> 
+    <head>
+        <meta charset="UTF-8">
+
+        <link rel="stylesheet" href="simulation.css">
+        <script type="text/javascript" src="simulation.js"></script>
+
+        <title>물고기 시뮬레이터</title>
+    </head>
+    <body>
+        <header>
+            <div>
+                <h1>
+                    물고기 시뮬레이텨
+                </h1>
+            </div>
+        </header>
+        <div id="wrap">
+            <div id="simulator_box">
+                <canvas id="simulator" width="492" height="692"></canvas>
+            </div>
+            <div id="setting">
+                <div id="set_delay">
+
+                </div>
+                <div id="set_value">
+                </div>
+            </div>
+            <div id="play">
+                <input type="checkbox" id="loop">
+                <label for="loop" id="loop_Label">Loop</label>
+                <button class="play_button" onclick="simulator_start(3);">아두이노</button>
+                <button class="play_button" onclick="simulator_start(2);">물결</button>
+                <button class="play_button" onclick="simulator_start(1);">play</button>
+            </div>
+            <div id="output_box">
+                <input type="textline" id="textbox">
+            </div>
+        </div>
+        <script>
+            set_textbox();
+            simulator_start(null);
+        </script>
+    </body>
+</html>
