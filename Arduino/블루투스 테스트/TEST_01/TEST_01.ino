@@ -3,7 +3,7 @@
 #define BT_RXD 2
 #define BT_TXD 3
 
-SoftwareSerial hc06(BT_RXD, BT_TXD);
+SoftwareSerial hc06(BT_TXD, BT_RXD);
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
