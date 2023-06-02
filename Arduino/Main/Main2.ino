@@ -3,31 +3,31 @@
 #include <DFRobotDFPlayerMini.h>
 
 //mp3모듈
-#define MP3_RXD 0
-#define MP3_TXD 1
+#define MP3_RXD 2
+#define MP3_TXD 3
 
 //블루투스 모듈
-#define BT_RXD 2
-#define BT_TXD 3
+#define BT_RXD 4
+#define BT_TXD 5
 
 //모터드라이버
-#define MD_in3 4
-#define MD_in4 5
-#define ENB 6
+#define MD_in3 6
+#define MD_in4 7
+#define ENB 8
 
 //초음파 모듈
-#define Trig_Pin 7
-#define Echo_Pin 8
+#define Trig_Pin 9
+#define Echo_Pin 10
 
 //서보모터 핀 번호
-#define TAIL1_PIN 9
-#define TAIL2_PIN 10
-#define BODY1_PIN 11
-#define BODY2_PIN 12
-#define BODY3_PIN 13
-#define MOUTH1_PIN A0
-#define MOUTH2_PIN A1
-#define BODY4_PIN A2
+#define TAIL1_PIN 11
+#define TAIL2_PIN 12
+#define BODY1_PIN 13
+#define BODY2_PIN A0
+#define BODY3_PIN A1
+#define MOUTH1_PIN A2
+#define MOUTH2_PIN A3
+#define BODY4_PIN A4
 Servo tail1;
 Servo tail2;
 Servo body1;
@@ -46,7 +46,7 @@ DFRobotDFPlayerMini mp3Player;
 
 // 움직임 모드
 short movement = -1;
-short sound = 0;
+short sound = -1;
 double time = 0;
 short mode = -1;
 short nose = 0;
@@ -65,8 +65,8 @@ const short init_tail2_angle = 90;
 const short init_body1_angle = 90;
 const short init_body2_angle = 90;
 const short init_body3_angle = 90;
-const short init_mouth1_angle = 90;
-const short init_mouth2_angle = 90;
+const short init_mouth1_angle = 135;
+const short init_mouth2_angle = 135;
 const short init_body4_angle = 90;
 
 //서보모터 배열
@@ -108,10 +108,8 @@ void setup() {
   //   Serial.println(F("2.Please insert the SD card!"));
   //   while(true);
   // }
-  // mp3Player.setTimeOut(500);
-  // mp3Player.volume(30);
+  // mp3Player.volume(0);
   // mp3Player.EQ(DFPLAYER_EQ_NORMAL); 
-  // delay(1000);
   delay(3000);
   for(int i=0; i < len_servo; i++){
     (*servo[i]).write(*init_angle[i]);
@@ -120,14 +118,15 @@ void setup() {
 
 void loop() {
 
-  //초음파 센서로 거리 구하기
-  digitalWrite(Trig_Pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(Trig_Pin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(Trig_Pin, LOW);
-  long duration = pulseIn(Echo_Pin, HIGH);
-  float distance = duration * 0.0343 / 2;
+  // //초음파 센서로 거리 구하기
+  // digitalWrite(Trig_Pin, LOW);
+  // delayMicroseconds(2);
+  // digitalWrite(Trig_Pin, HIGH);
+  // delayMicroseconds(10);
+  // digitalWrite(Trig_Pin, LOW);
+  // long duration = pulseIn(Echo_Pin, HIGH);
+  // float distance = duration * 0.0343 / 2;
+  // Serial.println(distance);
 
   if (BT.available()){
     mode = BT.read() - 48;
@@ -169,10 +168,18 @@ void loop() {
       movement = 6;
       break;
     case 7:
+      //꼬리 원위치
+      movement = 7;
+      break;
+    case 8:
+      //꼬리 원위치
+      movement = 8;
+      break;
+    case 9:
       // 울음소리 1
       sound = 0;
       break;
-    case 8:
+    case 10:
       // 울음소리 2
       sound = 1;
       break;
@@ -217,6 +224,17 @@ void loop() {
       move(&body4, init_body4_angle);
       move(&tail2, init_tail2_angle);
       break;
+    case 7:
+      //입벌리기
+      //swim(init_tail1_angle);
+      move(&mouth1, 90);
+      move(&mouth2, 90);
+    case 8:
+      //입닫기
+      //swim(init_tail1_angle);
+      move(&mouth1, init_mouth1_angle);
+      move(&mouth2, init_mouth2_angle);
+      break;
     default:
       break;
   }
@@ -224,22 +242,28 @@ void loop() {
 
   //울음소리
   // switch(sound){
+  //   case -1:
+  //     break;
   //   case 0:
+  //     mp3Player.volume(30);
   //     mp3Player.play(1);
+  //     sound = -1;
   //     break;
   //   case 1:
+  //     mp3Player.volume(30);
   //     mp3Player.play(2);
+  //     sound = -1;
   //     break;
   //   default:
   //     break;
   // }
 
   //움직임 속도
-  // Serial.print("movement: ");
-  // Serial.print(movement);
-  // Serial.print(" time: ");
-  // Serial.println(time);
-  delay(10);
+  Serial.print("movement: ");
+  Serial.print(movement);
+  Serial.print(" time: ");
+  Serial.println(time);
+  delay(100);
 }
 
 void swim(short tail_angle){
