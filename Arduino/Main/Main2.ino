@@ -102,14 +102,15 @@ void setup() {
     (*servo[i]).attach(servo_pin[i]);
   }
   
-  // if (!mp3Player.begin(MP3), false) {  //객체 초기화
-  //   Serial.println(F("Unable to begin:"));
-  //   Serial.println(F("1.Please recheck the connection!"));
-  //   Serial.println(F("2.Please insert the SD card!"));
-  //   while(true);
-  // }
-  // mp3Player.volume(0);
-  // mp3Player.EQ(DFPLAYER_EQ_NORMAL); 
+  if (!mp3Player.begin(MP3), false) {  //객체 초기화
+    Serial.println(F("Unable to begin:"));
+    Serial.println(F("1.Please recheck the connection!"));
+    Serial.println(F("2.Please insert the SD card!"));
+    while(true);
+  }
+  mp3Player.volume(0);
+  mp3Player.EQ(DFPLAYER_EQ_NORMAL); 
+
   delay(3000);
   for(int i=0; i < len_servo; i++){
     (*servo[i]).write(*init_angle[i]);
@@ -118,25 +119,21 @@ void setup() {
 
 void loop() {
 
-  // //초음파 센서로 거리 구하기
-  // digitalWrite(Trig_Pin, LOW);
-  // delayMicroseconds(2);
-  // digitalWrite(Trig_Pin, HIGH);
-  // delayMicroseconds(10);
-  // digitalWrite(Trig_Pin, LOW);
-  // long duration = pulseIn(Echo_Pin, HIGH);
-  // float distance = duration * 0.0343 / 2;
-  // Serial.println(distance);
+  //초음파 센서로 거리 구하기
+  digitalWrite(Trig_Pin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(Trig_Pin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig_Pin, LOW);
+  long duration = pulseIn(Echo_Pin, HIGH);
+  float distance = duration * 0.0343 / 2;
+  Serial.println(distance);
 
+  //블루투스 모듈 통신
   if (BT.available()){
     mode = BT.read() - 48;
     Serial.println(mode);
   }
-
-  // if(mode != 0){
-  //   Serial.write(mode);
-  //   Serial.write("\n");
-  // }
 
   switch(mode){
     case 0:
@@ -182,6 +179,10 @@ void loop() {
     case 10:
       // 울음소리 2
       sound = 1;
+      break;
+    case 11:
+      // 물뿜기
+      movement = 9;
       break;
     default:
       break;
@@ -235,37 +236,57 @@ void loop() {
       move(&mouth1, init_mouth1_angle);
       move(&mouth2, init_mouth2_angle);
       break;
+    case 9:
+      //물뿜기
+      if(water_spew(nose)){
+        movement = 1;
+      }
+      break;
     default:
       break;
   }
 
-
   //울음소리
-  // switch(sound){
-  //   case -1:
-  //     break;
-  //   case 0:
-  //     mp3Player.volume(30);
-  //     mp3Player.play(1);
-  //     sound = -1;
-  //     break;
-  //   case 1:
-  //     mp3Player.volume(30);
-  //     mp3Player.play(2);
-  //     sound = -1;
-  //     break;
-  //   default:
-  //     break;
-  // }
+  switch(sound){
+    case -1:
+      mp3Player.volume(0);
+      sound = -2;
+      break;
+    case 0:
+      mp3Player.volume(30);
+      mp3Player.play(1);
+      sound = -1;
+      break;
+    case 1:
+      mp3Player.volume(30);
+      mp3Player.play(2);
+      sound = -1;
+      break;
+    default:
+      break;
+  }
 
   //움직임 속도
-  Serial.print("movement: ");
-  Serial.print(movement);
-  Serial.print(" time: ");
-  Serial.println(time);
   delay(100);
 }
 
+//물 뿜기 (1초동안 물 뿜음)
+bool water_spew(short& nose){
+  if(nose < 1000){
+    nose+=100;
+    digitalWrite(MD_in3, HIGH);
+    digitalWrite(MD_in4, LOW);
+    analogWrite(ENB, 255);
+    return 0;
+  }
+  else{
+    nose=0;
+    analogWrite(ENB, 0);
+    return 1;
+  }
+}
+
+//물결 형태로 수영
 void swim(short tail_angle){
   // 물결 모양 생성
   tail1_angle = sin(time + 0) * 30 + tail_angle;
@@ -283,6 +304,8 @@ void swim(short tail_angle){
   time += 0.4;
 }
 
+
+//원하는 뒤치로 100ms당 5도씩 이동
 void move(Servo* s, short angle){
   Servo& a = *s;
   int corrent_angle = a.read();
@@ -299,6 +322,7 @@ void move(Servo* s, short angle){
 
 }
 
+//꼬리 움직임
 void tail_move(short v, short* movement){
   int angle = tail2.read();
   int value = init_tail2_angle;
@@ -331,6 +355,7 @@ void tail_move(short v, short* movement){
   }
 }
 
+//정렬
 void line_up(Servo* servo[len_servo]){
   for(int i= 0 ; i < len_servo; i++){
     Servo& s = *servo[i];
@@ -346,9 +371,4 @@ void line_up(Servo* servo[len_servo]){
       }
     }
   }
-}
-
-void move_servo(Servo* servo, int value,int pDelay){
-  (*servo).write(value);
-  delay(pDelay);
 }
