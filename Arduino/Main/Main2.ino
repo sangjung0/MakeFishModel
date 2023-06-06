@@ -129,6 +129,11 @@ void loop() {
   float distance = duration * 0.0343 / 2;
   Serial.println(distance);
 
+  //초음파 센서에 손을 가까이 대면 고래소리 재생
+  if(distance < 100){
+    sound = 0;
+  }
+
   //블루투스 모듈 통신
   if (BT.available()){
     mode = BT.read() - 48;
